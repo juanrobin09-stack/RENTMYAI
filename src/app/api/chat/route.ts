@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { streamText } from "ai";
-import { openai as aiOpenai } from "@ai-sdk/openai";
+import { anthropic } from "@/lib/ai";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
 
   // 7. Stream de la réponse
   const result = streamText({
-    model: aiOpenai(agent.model),
+    model: anthropic(agent.model),
     temperature: agent.temperature,
     system: systemPrompt,
     messages: messages.map((m) => ({ role: m.role, content: m.content })),

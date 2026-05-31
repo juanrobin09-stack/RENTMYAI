@@ -11,8 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const MODELS = [
-  { value: "gpt-4o-mini", label: "GPT-4o mini (rapide, économique)" },
-  { value: "gpt-4o", label: "GPT-4o (qualité maximale)" },
+  { value: "claude-3-5-haiku-latest", label: "Claude 3.5 Haiku (rapide, économique)" },
+  { value: "claude-3-5-sonnet-latest", label: "Claude 3.5 Sonnet (qualité maximale)" },
 ];
 
 export default function NewAgentPage() {

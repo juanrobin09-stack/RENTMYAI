@@ -6,7 +6,9 @@ export const createAgentSchema = z.object({
   description: z.string().max(2000).optional(),
   categoryId: z.string().optional(),
   systemPrompt: z.string().min(20).max(8000),
-  model: z.enum(["gpt-4o-mini", "gpt-4o"]).default("gpt-4o-mini"),
+  model: z
+    .enum(["claude-3-5-haiku-latest", "claude-3-5-sonnet-latest"])
+    .default("claude-3-5-haiku-latest"),
   temperature: z.number().min(0).max(2).default(0.7),
   welcomeMsg: z.string().max(500).optional(),
   suggestions: z.array(z.string().max(120)).max(6).default([]),

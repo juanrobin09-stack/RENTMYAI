@@ -53,7 +53,7 @@ Client paie 19€/mois pour "Coach Muscu IA"
       → (si affilié) une part de la commission plateforme va à l'affilié
 ```
 
-**Unit economics** : marge brute élevée (coût = inference OpenAI + infra, refacturé via le prix de l'agent).
+**Unit economics** : marge brute élevée (coût = inference Claude + embeddings Voyage + infra, refacturé via le prix de l'agent).
 
 ## 4. 🏗️ Architecture globale
 
@@ -72,9 +72,9 @@ Client paie 19€/mois pour "Coach Muscu IA"
    ┌────────────┬──────────┼───────────┬─────────────┬─────────┐
    ▼            ▼          ▼           ▼             ▼         ▼
 ┌──────┐  ┌─────────┐ ┌─────────┐ ┌──────────┐ ┌──────────┐ ┌──────┐
-│Better│  │ Prisma  │ │ OpenAI  │ │  Stripe  │ │UploadThing│ │pgvec │
+│Better│  │ Prisma  │ │ Claude  │ │  Stripe  │ │UploadThing│ │pgvec │
 │ Auth │  │Postgres │ │ chat +  │ │ Connect  │ │  (PDF)    │ │ RAG  │
-│      │  │  (Neon) │ │ embeds  │ │ payouts  │ │           │ │      │
+│      │  │  (Neon) │ │ Voyage  │ │ payouts  │ │           │ │      │
 └──────┘  └─────────┘ └─────────┘ └──────────┘ └──────────┘ └──────┘
 ```
 
@@ -83,11 +83,11 @@ Client paie 19€/mois pour "Coach Muscu IA"
 PDF upload (UploadThing)
   → webhook → parse (pdf-parse)
   → chunking (~800 tokens, overlap 100)
-  → embeddings (text-embedding-3-small)
+  → embeddings (Voyage AI · voyage-3.5 · 1024d)
   → stockage pgvector (table chunk)
 
 Question user → embed query → similarity search (cosine, top-k)
-  → contexte injecté dans systemPrompt → GPT-4o stream → réponse + citations
+  → contexte injecté dans systemPrompt → Claude stream → réponse + citations
 ```
 
 ## 5. 🗄️ Base de données
@@ -97,7 +97,7 @@ Schéma complet : [`prisma/schema.prisma`](./prisma/schema.prisma).
 **Domaines** :
 - **Auth** : `User`, `Session`, `Account`, `Verification` (Better Auth)
 - **Marketplace** : `Category`, `Agent`
-- **RAG** : `Document`, `Chunk` (vector 1536)
+- **RAG** : `Document`, `Chunk` (vector 1024)
 - **Chat** : `Conversation`, `Message`
 - **Monétisation** : `Subscription`, `Purchase`, `Earning`, `Payout`
 - **Social** : `Review`
@@ -130,7 +130,7 @@ npm run dev
 
 **Frontend** : Next.js 15 · React 19 · TypeScript · TailwindCSS · Shadcn UI
 **Backend** : Next.js API Routes / Server Actions · Prisma · PostgreSQL (pgvector)
-**IA** : OpenAI · RAG · Embeddings · pgvector
+**IA** : Claude (Anthropic) · Voyage AI (embeddings) · RAG · pgvector
 **Paiement** : Stripe Connect
 **Auth** : Better Auth
 **Stockage** : UploadThing
@@ -141,7 +141,7 @@ npm run dev
 - [x] Fondations : stratégie, schéma Prisma, arborescence
 - [x] Scaffold Next.js + config (Tailwind, Shadcn, tsconfig)
 - [x] Auth (Better Auth) + middleware
-- [x] Lib core (db, openai, stripe, rag, uploadthing)
+- [x] Lib core (db, ai/claude, voyage, stripe, rag, uploadthing)
 - [x] Marketplace + pages publiques (SEO/ISR)
 - [x] Création d'agent + upload PDF + pipeline RAG
 - [x] Chat IA streaming

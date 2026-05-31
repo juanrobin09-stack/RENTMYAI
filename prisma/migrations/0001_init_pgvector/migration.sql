@@ -5,9 +5,9 @@
 CREATE EXTENSION IF NOT EXISTS vector;
 
 -- 2. Colonne embedding sur chunk (si non créée par Prisma)
---    text-embedding-3-small => 1536 dimensions.
+--    Voyage AI voyage-3.5 => 1024 dimensions.
 ALTER TABLE "chunk"
-  ADD COLUMN IF NOT EXISTS "embedding" vector(1536);
+  ADD COLUMN IF NOT EXISTS "embedding" vector(1024);
 
 -- 3. Index HNSW pour la recherche cosinus (rapide à grande échelle).
 --    Alternative IVFFlat si volume modéré ; HNSW = meilleur rappel/latence.
