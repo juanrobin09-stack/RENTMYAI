@@ -1,0 +1,475 @@
+// =============================================================================
+// RentMyAI — Prisma Schema
+// PostgreSQL + pgvector. Generated client + Better Auth compatible tables.
+// =============================================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [vector]
+}
+
+// -----------------------------------------------------------------------------
+// ENUMS
+// -----------------------------------------------------------------------------
+
+enum Role {
+  USER
+  CREATOR
+  ADMIN
+}
+
+enum AgentStatus {
+  DRAFT
+  PUBLISHED
+  SUSPENDED
+  ARCHIVED
+}
+
+enum PricingModel {
+  FREE
+  SUBSCRIPTION // récurrent mensuel
+  ONE_TIME // accès à vie
+}
+
+enum DocumentStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  UNPAID
+}
+
+enum PayoutStatus {
+  PENDING
+  IN_TRANSIT
+  PAID
+  FAILED
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum ReferralStatus {
+  PENDING
+  CONVERTED
+  PAID
+}
+
+// -----------------------------------------------------------------------------
+// AUTH (Better Auth)
+// -----------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  role          Role      @default(USER)
+
+  // Stripe (côté client/acheteur)
+  stripeCustomerId String? @unique
+
+  // Stripe Connect (côté créateur/vendeur)
+  stripeConnectId       String?  @unique
+  stripeConnectEnabled  Boolean  @default(false)
+  payoutsEnabled        Boolean  @default(false)
+
+  // Affiliation
+  affiliateCode String?  @unique
+  referredById  String?
+  referredBy    User?    @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals     User[]   @relation("Referrals")
+
+  banned        Boolean  @default(false)
+  banReason     String?
+
+  // Relations
+  accounts       Account[]
+  sessions       Session[]
+  agents         Agent[]
+  conversations  Conversation[]
+  subscriptions  Subscription[]
+  purchases      Purchase[]
+  reviews        Review[]
+  earnings       Earning[]
+  payouts        Payout[]
+  referralsMade  Referral[] @relation("Referrer")
+  referralEarned Referral[] @relation("Referred")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([role])
+  @@index([affiliateCode])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Impersonation (admin)
+  impersonatedBy String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// -----------------------------------------------------------------------------
+// MARKETPLACE — Agents (les IA louables)
+// -----------------------------------------------------------------------------
+
+model Category {
+  id     String  @id @default(cuid())
+  name   String  @unique
+  slug   String  @unique
+  icon   String?
+  agents Agent[]
+
+  createdAt DateTime @default(now())
+
+  @@map("category")
+}
+
+model Agent {
+  id          String      @id @default(cuid())
+  creatorId   String
+  creator     User        @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  name        String
+  slug        String      @unique
+  tagline     String?
+  description String?     @db.Text
+  avatar      String?
+  coverImage  String?
+
+  categoryId  String?
+  category    Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  // Configuration IA
+  systemPrompt String      @db.Text
+  model        String      @default("gpt-4o-mini")
+  temperature  Float       @default(0.7)
+  welcomeMsg   String?     @db.Text
+  suggestions  String[]    @default([])
+
+  // Pricing
+  pricingModel    PricingModel @default(SUBSCRIPTION)
+  priceMonthly    Int          @default(0) // en centimes
+  priceOneTime    Int          @default(0) // en centimes
+  stripeProductId String?
+  stripePriceId   String?
+  trialDays       Int          @default(0)
+
+  // Statut & visibilité
+  status   AgentStatus @default(DRAFT)
+  featured Boolean     @default(false)
+
+  // Métriques (dénormalisées pour la perf)
+  ratingAvg    Float @default(0)
+  ratingCount  Int   @default(0)
+  usageCount   Int   @default(0)
+  subscriberCount Int @default(0)
+
+  // Relations
+  documents     Document[]
+  chunks        Chunk[]
+  conversations Conversation[]
+  subscriptions Subscription[]
+  purchases     Purchase[]
+  reviews       Review[]
+  earnings      Earning[]
+
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([creatorId])
+  @@index([categoryId])
+  @@index([status, featured])
+  @@index([slug])
+  @@map("agent")
+}
+
+// -----------------------------------------------------------------------------
+// RAG — Documents & Embeddings (pgvector)
+// -----------------------------------------------------------------------------
+
+model Document {
+  id        String         @id @default(cuid())
+  agentId   String
+  agent     Agent          @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  name      String
+  fileUrl   String
+  fileKey   String // clé UploadThing
+  mimeType  String         @default("application/pdf")
+  size      Int            @default(0)
+  pageCount Int            @default(0)
+  status    DocumentStatus @default(PENDING)
+  error     String?
+
+  chunks    Chunk[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([agentId])
+  @@index([status])
+  @@map("document")
+}
+
+model Chunk {
+  id         String   @id @default(cuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  agentId    String
+  agent      Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  content String                       @db.Text
+  index   Int
+  tokens  Int                          @default(0)
+  // Embedding text-embedding-3-small = 1536 dims
+  embedding Unsupported("vector(1536)")?
+
+  createdAt DateTime @default(now())
+
+  @@index([documentId])
+  @@index([agentId])
+  @@map("chunk")
+}
+
+// -----------------------------------------------------------------------------
+// CHAT
+// -----------------------------------------------------------------------------
+
+model Conversation {
+  id      String @id @default(cuid())
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agentId String
+  agent   Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  title    String?
+  messages Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([agentId])
+  @@map("conversation")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  role       MessageRole
+  content    String      @db.Text
+  tokens     Int         @default(0)
+  // Sources RAG utilisées (ids de chunks) pour citations
+  sources    String[]    @default([])
+
+  createdAt DateTime @default(now())
+
+  @@index([conversationId])
+  @@map("message")
+}
+
+// -----------------------------------------------------------------------------
+// MONÉTISATION — Subscriptions, Purchases, Earnings, Payouts
+// -----------------------------------------------------------------------------
+
+model Subscription {
+  id      String @id @default(cuid())
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agentId String
+  agent   Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  stripeSubscriptionId String             @unique
+  stripePriceId        String?
+  status               SubscriptionStatus @default(ACTIVE)
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, agentId])
+  @@index([userId])
+  @@index([agentId])
+  @@map("subscription")
+}
+
+model Purchase {
+  id      String @id @default(cuid())
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agentId String
+  agent   Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  stripePaymentIntentId String? @unique
+  amount                Int // centimes
+  currency              String  @default("eur")
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, agentId])
+  @@index([userId])
+  @@map("purchase")
+}
+
+model Earning {
+  id        String @id @default(cuid())
+  creatorId String
+  creator   User   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  agentId   String
+  agent     Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  grossAmount    Int // total payé par le client (centimes)
+  platformFee    Int // commission RentMyAI
+  affiliateFee   Int    @default(0)
+  netAmount      Int // ce que touche le créateur
+  currency       String @default("eur")
+  source         String // "subscription" | "one_time"
+  stripeChargeId String?
+
+  payoutId String?
+  payout   Payout? @relation(fields: [payoutId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([creatorId])
+  @@index([agentId])
+  @@index([payoutId])
+  @@map("earning")
+}
+
+model Payout {
+  id        String       @id @default(cuid())
+  creatorId String
+  creator   User         @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  amount          Int
+  currency        String       @default("eur")
+  status          PayoutStatus @default(PENDING)
+  stripeTransferId String?
+  stripePayoutId   String?
+
+  earnings  Earning[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([creatorId])
+  @@map("payout")
+}
+
+// -----------------------------------------------------------------------------
+// SOCIAL — Reviews
+// -----------------------------------------------------------------------------
+
+model Review {
+  id      String @id @default(cuid())
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agentId String
+  agent   Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  rating  Int // 1..5
+  comment String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, agentId])
+  @@index([agentId])
+  @@map("review")
+}
+
+// -----------------------------------------------------------------------------
+// AFFILIATION
+// -----------------------------------------------------------------------------
+
+model Referral {
+  id         String         @id @default(cuid())
+  referrerId String
+  referrer   User           @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredId String?
+  referred   User?          @relation("Referred", fields: [referredId], references: [id], onDelete: SetNull)
+
+  status     ReferralStatus @default(PENDING)
+  commission Int            @default(0) // centimes gagnés
+  currency   String         @default("eur")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([referrerId])
+  @@map("referral")
+}
