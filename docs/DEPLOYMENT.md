@@ -56,9 +56,10 @@ dashboard.stripe.com (bouton « Mode test » activé) :
 | Variable | Où |
 |---|---|
 | `STRIPE_SECRET_KEY` | Developers → API keys → Secret key (`sk_test_...`) |
-| `STRIPE_PUBLISHABLE_KEY` | Publishable key (`pk_test_...`) |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | même valeur (`pk_test_...`) |
 | `STRIPE_WEBHOOK_SECRET` | Developers → Webhooks → Add endpoint (`whsec_...`) |
+
+> Pas besoin de la clé « publishable » : le paiement se fait par redirection vers
+> Stripe Checkout (côté serveur), donc seules ces 2 valeurs sont nécessaires.
 
 **Carte de test** : `4242 4242 4242 4242`, date future, CVC `123`.
 
@@ -67,7 +68,7 @@ dashboard.stripe.com (bouton « Mode test » activé) :
 
 1. Désactive « Mode test » → active ton compte (entreprise, IBAN, identité).
 2. Active **Connect** en live (menu Connect → Get started → profil plateforme).
-3. Récupère les clés **live** (`sk_live_...`, `pk_live_...`).
+3. Récupère la clé **live** (`sk_live_...`).
 4. Crée un webhook **live** : URL `https://ton-site.vercel.app/api/stripe/webhook`,
    events : `checkout.session.completed`, `invoice.paid`,
    `customer.subscription.updated`, `customer.subscription.deleted`, `account.updated`
@@ -102,6 +103,6 @@ Client paie 19 € → Stripe → split automatique
 - [ ] `BETTER_AUTH_SECRET` + `BETTER_AUTH_URL` + `NEXT_PUBLIC_APP_URL`
 - [ ] `ANTHROPIC_API_KEY` + `VOYAGE_API_KEY`
 - [ ] `UPLOADTHING_TOKEN`
-- [ ] `STRIPE_SECRET_KEY` + `STRIPE_PUBLISHABLE_KEY` + `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` + `STRIPE_WEBHOOK_SECRET`
+- [ ] `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET`
 - [ ] (optionnel) `PLATFORM_FEE_PERCENT`, `AFFILIATE_COMMISSION_PERCENT`
 - [ ] Redeploy sur Vercel
