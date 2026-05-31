@@ -28,9 +28,10 @@ function priceLabel(a: AgentCardData) {
 export function AgentCard({ agent }: { agent: AgentCardData }) {
   return (
     <Link href={`/agents/${agent.slug}`} className="group">
-      <Card className="h-full p-5 transition hover:border-primary/40 hover:shadow-md">
+      <Card className="relative h-full overflow-hidden p-5 transition duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10">
+        <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-primary/10 opacity-0 blur-2xl transition group-hover:opacity-100" />
         <div className="flex items-start gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-secondary text-lg font-semibold">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-violet-500/20 to-indigo-500/10 text-lg font-semibold text-primary ring-1 ring-primary/15">
             {agent.avatar ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={agent.avatar} alt={agent.name} className="h-full w-full object-cover" />
@@ -39,7 +40,7 @@ export function AgentCard({ agent }: { agent: AgentCardData }) {
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="truncate font-semibold group-hover:text-primary">
+            <h3 className="truncate font-semibold transition group-hover:text-primary">
               {agent.name}
             </h3>
             {agent.category && (

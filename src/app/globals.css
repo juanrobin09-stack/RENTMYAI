@@ -4,44 +4,47 @@
 
 @layer base {
   :root {
+    /* Light — propre mais avec une vraie teinte violette */
     --background: 0 0% 100%;
-    --foreground: 240 10% 4%;
+    --foreground: 240 10% 6%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 4%;
-    --primary: 240 6% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 6% 10%;
+    --card-foreground: 240 10% 6%;
+    --primary: 256 92% 62%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 256 30% 96%;
+    --secondary-foreground: 256 40% 20%;
     --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
-    --accent: 240 5% 96%;
-    --accent-foreground: 240 6% 10%;
+    --muted-foreground: 240 4% 42%;
+    --accent: 256 90% 96%;
+    --accent-foreground: 256 60% 30%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
     --border: 240 6% 90%;
     --input: 240 6% 90%;
-    --ring: 240 6% 10%;
-    --radius: 0.75rem;
+    --ring: 256 92% 62%;
+    --radius: 0.9rem;
   }
 
   .dark {
-    --background: 240 10% 4%;
-    --foreground: 0 0% 98%;
-    --card: 240 8% 6%;
-    --card-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 6% 10%;
-    --secondary: 240 4% 14%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 4% 14%;
-    --muted-foreground: 240 5% 65%;
-    --accent: 240 4% 14%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62% 50%;
+    /* Dark premium — fond bleu-noir profond, accent violet électrique */
+    --background: 250 24% 6%;
+    --foreground: 250 20% 98%;
+    --card: 250 22% 9%;
+    --card-foreground: 250 20% 98%;
+    --primary: 258 90% 66%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 250 18% 14%;
+    --secondary-foreground: 250 20% 96%;
+    --muted: 250 16% 14%;
+    --muted-foreground: 250 12% 62%;
+    --accent: 258 60% 18%;
+    --accent-foreground: 258 90% 88%;
+    --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 4% 16%;
-    --input: 240 4% 16%;
-    --ring: 240 5% 84%;
+    --border: 250 16% 18%;
+    --input: 250 16% 18%;
+    --ring: 258 90% 66%;
+    --radius: 0.9rem;
   }
 
   * {
@@ -49,6 +52,83 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
   }
+}
+
+@layer utilities {
+  /* Texte en dégradé */
+  .text-gradient {
+    @apply bg-gradient-to-r from-violet-500 via-fuchsia-500 to-indigo-500 bg-clip-text text-transparent;
+  }
+  .text-gradient-soft {
+    @apply bg-gradient-to-br from-foreground to-foreground/55 bg-clip-text text-transparent;
+  }
+
+  /* Halo lumineux derrière le hero */
+  .glow {
+    position: relative;
+  }
+  .glow::before {
+    content: "";
+    position: absolute;
+    inset: -20%;
+    z-index: -1;
+    background:
+      radial-gradient(40% 50% at 50% 0%, hsl(258 90% 60% / 0.28), transparent 70%),
+      radial-gradient(30% 40% at 80% 20%, hsl(300 90% 60% / 0.18), transparent 70%),
+      radial-gradient(30% 40% at 15% 25%, hsl(220 90% 60% / 0.18), transparent 70%);
+    filter: blur(20px);
+    pointer-events: none;
+  }
+
+  /* Grille de fond subtile */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, hsl(var(--border) / 0.5) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.5) 1px, transparent 1px);
+    background-size: 56px 56px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 50%, transparent 100%);
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 50%, transparent 100%);
+  }
+
+  /* Carte verre dépoli */
+  .glass {
+    @apply border border-white/10 bg-white/[0.04] backdrop-blur-xl;
+  }
+
+  /* Bordure dégradée animée */
+  .gradient-border {
+    position: relative;
+    background: hsl(var(--card));
+    border-radius: var(--radius);
+  }
+  .gradient-border::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, hsl(258 90% 66% / 0.6), transparent 40%, hsl(300 90% 66% / 0.4));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+
+@layer base {
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  @keyframes shimmer {
+    100% { background-position: 200% center; }
+  }
+  .animate-fade-up { animation: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .animate-float { animation: float 6s ease-in-out infinite; }
 }
