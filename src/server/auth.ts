@@ -5,7 +5,14 @@ import { db } from "@/lib/db";
 
 /** Session courante (ou null) côté Server Component / Server Action. */
 export async function getCurrentSession() {
-  return auth.api.getSession({ headers: await headers() });
+  try {
+    return await auth.api.getSession({ headers: await headers() });
+  } catch (err) {
+    // DB indisponible / config manquante : on ne fait pas crasher la page,
+    // on considère l'utilisateur comme non connecté.
+    console.error("[auth] getSession a échoué:", err);
+    return null;
+  }
 }
 
 /** Exige un utilisateur connecté, sinon redirige vers /login. */
