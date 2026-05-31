@@ -74,7 +74,7 @@ Client paie 19€/mois pour "Coach Muscu IA"
 ┌──────┐  ┌─────────┐ ┌─────────┐ ┌──────────┐ ┌──────────┐ ┌──────┐
 │Better│  │ Prisma  │ │ Claude  │ │  Stripe  │ │UploadThing│ │pgvec │
 │ Auth │  │Postgres │ │ chat +  │ │ Connect  │ │  (PDF)    │ │ RAG  │
-│      │  │  (Neon) │ │ Voyage  │ │ payouts  │ │           │ │      │
+│      │  │(Supabase)│ │ Voyage │ │ payouts  │ │           │ │      │
 └──────┘  └─────────┘ └─────────┘ └──────────┘ └──────────┘ └──────┘
 ```
 
@@ -116,15 +116,37 @@ Voir [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) pour l'arborescence compl�
 npm install
 
 # 2. Configurer l'environnement
-cp .env.example .env   # remplir les clés
+cp .env.example .env   # remplir DATABASE_URL/DIRECT_URL (Supabase) + clés
 
-# 3. Base de données (PostgreSQL + pgvector)
-npm run db:push
-npm run db:seed
+# 3. Client Prisma
+npm run db:generate
 
 # 4. Lancer
 npm run dev
 ```
+
+## 🟢 Déploiement Supabase (base de données)
+
+Ce projet est câblé pour l'**intégration GitHub de Supabase** : le SQL du dossier
+[`supabase/migrations/`](./supabase/migrations) est appliqué automatiquement à
+chaque push sur la branche de production.
+
+```
+supabase/
+├── config.toml                     # config projet + seed
+├── seed.sql                        # catégories de la marketplace
+└── migrations/
+    └── 20260531000000_init.sql     # schéma complet + pgvector + index HNSW (1024d)
+```
+
+- **pgvector** est activé par la migration (`CREATE EXTENSION vector`).
+- L'index **HNSW** cosinus sur `chunk.embedding` (Voyage 1024d) est créé par la migration.
+- Prisma sert uniquement à **générer le client** et requêter (pas de `prisma migrate`,
+  Supabase est propriétaire des migrations). Le SQL est généré depuis `schema.prisma`
+  (source de vérité) via `prisma migrate diff`.
+
+> Connexion Prisma ↔ Supabase : `DATABASE_URL` = Transaction Pooler (port **6543**,
+> `?pgbouncer=true`), `DIRECT_URL` = Session/Direct (port **5432**). Voir `.env.example`.
 
 ## 🧱 Stack
 
@@ -149,5 +171,6 @@ npm run dev
 - [x] Dashboards créateur & utilisateur
 - [x] Reviews · Affiliation · Admin
 
-> Les 20 systèmes sont scaffoldés. Reste avant prod : `npm install`, provisionner
-> PostgreSQL+pgvector, remplir `.env`, configurer les webhooks Stripe, puis QA.
+> Les 20 systèmes sont scaffoldés. Reste avant prod : `npm install`, créer le projet
+> Supabase (migrations auto via GitHub), remplir les variables d'env Vercel, configurer
+> le webhook Stripe, puis QA.

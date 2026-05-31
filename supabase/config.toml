@@ -1,0 +1,14 @@
+# RentMyAI — Configuration Supabase
+# Renseigne `project_id` avec la référence de ton projet (Supabase → Settings → General).
+project_id = "rentmyai"
+
+[db]
+# Version du moteur Postgres (Supabase = 15+). pgvector est inclus.
+major_version = 15
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+# Les migrations du dossier supabase/migrations/ sont appliquées automatiquement
+# par l'intégration GitHub de Supabase à chaque push sur la branche de production.
