@@ -26,7 +26,9 @@ export function DocumentUploader({ agentId, initial }: { agentId: string; initia
       toast.success("PDF uploadé. Indexation RAG en cours…");
       router.refresh();
     },
-    onUploadError: (e) => toast.error(e.message),
+    onUploadError: (e) => {
+      toast.error(e.message);
+    },
   });
 
   async function action(documentId: string, type: "reingest" | "delete") {
