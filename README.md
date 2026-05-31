@@ -139,12 +139,15 @@ npm run dev
 ## 📍 Roadmap d'implémentation
 
 - [x] Fondations : stratégie, schéma Prisma, arborescence
-- [ ] Scaffold Next.js + config (Tailwind, Shadcn, tsconfig)
-- [ ] Auth (Better Auth) + middleware
-- [ ] Lib core (db, openai, stripe, rag, uploadthing)
-- [ ] Marketplace + pages publiques (SEO/ISR)
-- [ ] Création d'agent + upload PDF + pipeline RAG
-- [ ] Chat IA streaming
-- [ ] Stripe Connect : abos, one-time, payouts, webhooks
-- [ ] Dashboards créateur & utilisateur
-- [ ] Reviews · Affiliation · Admin
+- [x] Scaffold Next.js + config (Tailwind, Shadcn, tsconfig)
+- [x] Auth (Better Auth) + middleware
+- [x] Lib core (db, openai, stripe, rag, uploadthing)
+- [x] Marketplace + pages publiques (SEO/ISR)
+- [x] Création d'agent + upload PDF + pipeline RAG
+- [x] Chat IA streaming
+- [x] Stripe Connect : abos, one-time, payouts, webhooks
+- [x] Dashboards créateur & utilisateur
+- [x] Reviews · Affiliation · Admin
+
+> Les 20 systèmes sont scaffoldés. Reste avant prod : `npm install`, provisionner
+> PostgreSQL+pgvector, remplir `.env`, configurer les webhooks Stripe, puis QA.
