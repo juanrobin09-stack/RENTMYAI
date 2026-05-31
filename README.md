@@ -53,7 +53,7 @@ Client paie 19€/mois pour "Coach Muscu IA"
       → (si affilié) une part de la commission plateforme va à l'affilié
 ```
 
-**Unit economics** : marge brute élevée (coût = inference OpenAI + infra, refacturé via le prix de l'agent).
+**Unit economics** : marge brute élevée (coût = inference Claude + embeddings Voyage + infra, refacturé via le prix de l'agent).
 
 ## 4. 🏗️ Architecture globale
 
@@ -72,9 +72,9 @@ Client paie 19€/mois pour "Coach Muscu IA"
    ┌────────────┬──────────┼───────────┬─────────────┬─────────┐
    ▼            ▼          ▼           ▼             ▼         ▼
 ┌──────┐  ┌─────────┐ ┌─────────┐ ┌──────────┐ ┌──────────┐ ┌──────┐
-│Better│  │ Prisma  │ │ OpenAI  │ │  Stripe  │ │UploadThing│ │pgvec │
+│Better│  │ Prisma  │ │ Claude  │ │  Stripe  │ │UploadThing│ │pgvec │
 │ Auth │  │Postgres │ │ chat +  │ │ Connect  │ │  (PDF)    │ │ RAG  │
-│      │  │  (Neon) │ │ embeds  │ │ payouts  │ │           │ │      │
+│      │  │(Supabase)│ │ Voyage │ │ payouts  │ │           │ │      │
 └──────┘  └─────────┘ └─────────┘ └──────────┘ └──────────┘ └──────┘
 ```
 
@@ -83,11 +83,11 @@ Client paie 19€/mois pour "Coach Muscu IA"
 PDF upload (UploadThing)
   → webhook → parse (pdf-parse)
   → chunking (~800 tokens, overlap 100)
-  → embeddings (text-embedding-3-small)
+  → embeddings (Voyage AI · voyage-3.5 · 1024d)
   → stockage pgvector (table chunk)
 
 Question user → embed query → similarity search (cosine, top-k)
-  → contexte injecté dans systemPrompt → GPT-4o stream → réponse + citations
+  → contexte injecté dans systemPrompt → Claude stream → réponse + citations
 ```
 
 ## 5. 🗄️ Base de données
@@ -97,7 +97,7 @@ Schéma complet : [`prisma/schema.prisma`](./prisma/schema.prisma).
 **Domaines** :
 - **Auth** : `User`, `Session`, `Account`, `Verification` (Better Auth)
 - **Marketplace** : `Category`, `Agent`
-- **RAG** : `Document`, `Chunk` (vector 1536)
+- **RAG** : `Document`, `Chunk` (vector 1024)
 - **Chat** : `Conversation`, `Message`
 - **Monétisation** : `Subscription`, `Purchase`, `Earning`, `Payout`
 - **Social** : `Review`
@@ -116,21 +116,43 @@ Voir [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) pour l'arborescence compl�
 npm install
 
 # 2. Configurer l'environnement
-cp .env.example .env   # remplir les clés
+cp .env.example .env   # remplir DATABASE_URL/DIRECT_URL (Supabase) + clés
 
-# 3. Base de données (PostgreSQL + pgvector)
-npm run db:push
-npm run db:seed
+# 3. Client Prisma
+npm run db:generate
 
 # 4. Lancer
 npm run dev
 ```
 
+## 🟢 Déploiement Supabase (base de données)
+
+Ce projet est câblé pour l'**intégration GitHub de Supabase** : le SQL du dossier
+[`supabase/migrations/`](./supabase/migrations) est appliqué automatiquement à
+chaque push sur la branche de production.
+
+```
+supabase/
+├── config.toml                     # config projet + seed
+├── seed.sql                        # catégories de la marketplace
+└── migrations/
+    └── 20260531000000_init.sql     # schéma complet + pgvector + index HNSW (1024d)
+```
+
+- **pgvector** est activé par la migration (`CREATE EXTENSION vector`).
+- L'index **HNSW** cosinus sur `chunk.embedding` (Voyage 1024d) est créé par la migration.
+- Prisma sert uniquement à **générer le client** et requêter (pas de `prisma migrate`,
+  Supabase est propriétaire des migrations). Le SQL est généré depuis `schema.prisma`
+  (source de vérité) via `prisma migrate diff`.
+
+> Connexion Prisma ↔ Supabase : `DATABASE_URL` = Transaction Pooler (port **6543**,
+> `?pgbouncer=true`), `DIRECT_URL` = Session/Direct (port **5432**). Voir `.env.example`.
+
 ## 🧱 Stack
 
 **Frontend** : Next.js 15 · React 19 · TypeScript · TailwindCSS · Shadcn UI
 **Backend** : Next.js API Routes / Server Actions · Prisma · PostgreSQL (pgvector)
-**IA** : OpenAI · RAG · Embeddings · pgvector
+**IA** : Claude (Anthropic) · Voyage AI (embeddings) · RAG · pgvector
 **Paiement** : Stripe Connect
 **Auth** : Better Auth
 **Stockage** : UploadThing
@@ -139,12 +161,16 @@ npm run dev
 ## 📍 Roadmap d'implémentation
 
 - [x] Fondations : stratégie, schéma Prisma, arborescence
-- [ ] Scaffold Next.js + config (Tailwind, Shadcn, tsconfig)
-- [ ] Auth (Better Auth) + middleware
-- [ ] Lib core (db, openai, stripe, rag, uploadthing)
-- [ ] Marketplace + pages publiques (SEO/ISR)
-- [ ] Création d'agent + upload PDF + pipeline RAG
-- [ ] Chat IA streaming
-- [ ] Stripe Connect : abos, one-time, payouts, webhooks
-- [ ] Dashboards créateur & utilisateur
-- [ ] Reviews · Affiliation · Admin
+- [x] Scaffold Next.js + config (Tailwind, Shadcn, tsconfig)
+- [x] Auth (Better Auth) + middleware
+- [x] Lib core (db, ai/claude, voyage, stripe, rag, uploadthing)
+- [x] Marketplace + pages publiques (SEO/ISR)
+- [x] Création d'agent + upload PDF + pipeline RAG
+- [x] Chat IA streaming
+- [x] Stripe Connect : abos, one-time, payouts, webhooks
+- [x] Dashboards créateur & utilisateur
+- [x] Reviews · Affiliation · Admin
+
+> Les 20 systèmes sont scaffoldés. Reste avant prod : `npm install`, créer le projet
+> Supabase (migrations auto via GitHub), remplir les variables d'env Vercel, configurer
+> le webhook Stripe, puis QA.

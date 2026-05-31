@@ -84,7 +84,7 @@ rentmyai/
 │   │   ├── db.ts                  # Prisma singleton
 │   │   ├── auth.ts                # Config Better Auth (serveur)
 │   │   ├── auth-client.ts         # Client Better Auth
-│   │   ├── openai.ts              # Client OpenAI + helpers
+│   │   ├── ai.ts                  # Provider Claude (Anthropic) + config Voyage
 │   │   ├── stripe.ts              # Client Stripe + Connect helpers
 │   │   ├── uploadthing.ts         # File router
 │   │   ├── rag/
