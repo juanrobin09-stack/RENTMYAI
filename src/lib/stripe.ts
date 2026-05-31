@@ -1,8 +1,30 @@
 import Stripe from "stripe";
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
-  apiVersion: "2025-02-24.acacia",
-  typescript: true,
+/**
+ * Client Stripe paresseux.
+ * On NE l'instancie PAS au chargement du module : sinon `new Stripe("")` lève
+ * une exception quand `STRIPE_SECRET_KEY` est absente (ex. build Vercel avant
+ * configuration des variables d'env, ou collecte de page data de Next).
+ * Le proxy crée le vrai client à la première utilisation (au runtime).
+ */
+let _stripe: Stripe | null = null;
+function getStripe(): Stripe {
+  if (_stripe) return _stripe;
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error("STRIPE_SECRET_KEY est manquante");
+  _stripe = new Stripe(key, {
+    apiVersion: "2025-02-24.acacia",
+    typescript: true,
+  });
+  return _stripe;
+}
+
+export const stripe = new Proxy({} as Stripe, {
+  get(_target, prop, receiver) {
+    const client = getStripe();
+    const value = Reflect.get(client as object, prop, receiver);
+    return typeof value === "function" ? value.bind(client) : value;
+  },
 });
 
 export const PLATFORM_FEE_PERCENT = Number(
