@@ -13,18 +13,28 @@ const STEPS = [
   { icon: Wallet, title: "Sois payé", desc: "Abonnement ou achat. Stripe te verse automatiquement." },
 ];
 
+async function getFeatured() {
+  try {
+    return await db.agent.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: [{ featured: "desc" }, { usageCount: "desc" }],
+      take: 6,
+      select: {
+        slug: true, name: true, tagline: true, avatar: true,
+        pricingModel: true, priceMonthly: true, priceOneTime: true,
+        ratingAvg: true, ratingCount: true, usageCount: true,
+        category: { select: { name: true } },
+      },
+    });
+  } catch (err) {
+    // DB indisponible : la landing s'affiche quand même (sans la section IA).
+    console.error("[home] chargement des IA populaires échoué:", err);
+    return [];
+  }
+}
+
 export default async function HomePage() {
-  const featured = await db.agent.findMany({
-    where: { status: "PUBLISHED" },
-    orderBy: [{ featured: "desc" }, { usageCount: "desc" }],
-    take: 6,
-    select: {
-      slug: true, name: true, tagline: true, avatar: true,
-      pricingModel: true, priceMonthly: true, priceOneTime: true,
-      ratingAvg: true, ratingCount: true, usageCount: true,
-      category: { select: { name: true } },
-    },
-  });
+  const featured = await getFeatured();
 
   return (
     <>

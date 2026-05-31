@@ -41,18 +41,20 @@ export default async function ExplorePage({
         : { usageCount: "desc" };
 
   const [agents, categories] = await Promise.all([
-    db.agent.findMany({
-      where,
-      orderBy,
-      take: 48,
-      select: {
-        slug: true, name: true, tagline: true, avatar: true,
-        pricingModel: true, priceMonthly: true, priceOneTime: true,
-        ratingAvg: true, ratingCount: true, usageCount: true,
-        category: { select: { name: true } },
-      },
-    }),
-    db.category.findMany({ orderBy: { name: "asc" } }),
+    db.agent
+      .findMany({
+        where,
+        orderBy,
+        take: 48,
+        select: {
+          slug: true, name: true, tagline: true, avatar: true,
+          pricingModel: true, priceMonthly: true, priceOneTime: true,
+          ratingAvg: true, ratingCount: true, usageCount: true,
+          category: { select: { name: true } },
+        },
+      })
+      .catch(() => []),
+    db.category.findMany({ orderBy: { name: "asc" } }).catch(() => []),
   ]);
 
   return (

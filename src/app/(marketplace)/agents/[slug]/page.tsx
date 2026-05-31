@@ -13,19 +13,21 @@ import { formatPrice } from "@/lib/utils";
 export const revalidate = 60;
 
 async function getAgent(slug: string) {
-  return db.agent.findFirst({
-    where: { slug, status: "PUBLISHED" },
-    include: {
-      creator: { select: { name: true, image: true } },
-      category: { select: { name: true, slug: true } },
-      reviews: {
-        orderBy: { createdAt: "desc" },
-        take: 10,
-        include: { user: { select: { name: true, image: true } } },
+  return db.agent
+    .findFirst({
+      where: { slug, status: "PUBLISHED" },
+      include: {
+        creator: { select: { name: true, image: true } },
+        category: { select: { name: true, slug: true } },
+        reviews: {
+          orderBy: { createdAt: "desc" },
+          take: 10,
+          include: { user: { select: { name: true, image: true } } },
+        },
+        _count: { select: { documents: true } },
       },
-      _count: { select: { documents: true } },
-    },
-  });
+    })
+    .catch(() => null);
 }
 
 export async function generateMetadata({
