@@ -8,32 +8,34 @@ export const anthropic = createAnthropic({
   apiKey: process.env.ANTHROPIC_API_KEY ?? "",
 });
 
-/** Identifiants de modèles Claude exacts et stables (API publique). */
-export const MODEL_HAIKU = "claude-3-5-haiku-20241022";
-export const MODEL_SONNET = "claude-3-5-sonnet-20241022";
+/** Identifiants de modèles Claude (génération actuelle). */
+export const MODEL_HAIKU = "claude-haiku-4-5-20251001";
+export const MODEL_SONNET = "claude-sonnet-4-6";
 
 /** Modèle de chat par défaut si l'agent n'en précise pas. */
-export const DEFAULT_CHAT_MODEL = process.env.ANTHROPIC_CHAT_MODEL ?? MODEL_HAIKU;
+export const DEFAULT_CHAT_MODEL = process.env.ANTHROPIC_CHAT_MODEL ?? MODEL_SONNET;
 
 /** Modèles Claude proposés aux créateurs. */
 export const CHAT_MODELS = [
-  { value: MODEL_HAIKU, label: "Claude 3.5 Haiku (rapide, économique)" },
-  { value: MODEL_SONNET, label: "Claude 3.5 Sonnet (qualité maximale)" },
+  { value: MODEL_SONNET, label: "Claude Sonnet 4.6 (recommandé, qualité maximale)" },
+  { value: MODEL_HAIKU, label: "Claude Haiku 4.5 (rapide, économique)" },
 ] as const;
 
 /**
  * Normalise le modèle stocké en un identifiant Anthropic valide.
- * Gère les anciens alias `-latest`, les anciens noms OpenAI, et tout
- * inconnu → on retombe sur un modèle stable. Évite les erreurs "model not found"
- * pour les agents déjà créés.
+ * - IDs actuels → conservés tels quels
+ * - "sonnet" → Sonnet 4.6
+ * - "haiku" (génération actuelle) → Haiku 4.5
+ * - tout le reste (anciens alias -latest, modèles 3.x obsolètes, gpt-*) → défaut
+ * Évite les erreurs "model not found" pour les agents déjà créés.
  */
 export function resolveModel(model: string | null | undefined): string {
   if (!model) return DEFAULT_CHAT_MODEL;
+  if (model === MODEL_HAIKU || model === MODEL_SONNET) return model;
   const m = model.toLowerCase();
   if (m.includes("sonnet")) return MODEL_SONNET;
-  if (m.includes("haiku")) return MODEL_HAIKU;
-  // gpt-* ou tout autre ancien modèle → défaut
-  return DEFAULT_CHAT_MODEL;
+  if (m.includes("haiku") && m.includes("4-5")) return MODEL_HAIKU;
+  return DEFAULT_CHAT_MODEL; // legacy/obsolète -> Sonnet 4.6
 }
 
 // --- Embeddings (Voyage AI, recommandé par Anthropic) ---
