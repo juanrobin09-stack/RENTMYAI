@@ -96,6 +96,13 @@ export async function POST(req: NextRequest) {
   }
 
   // 7. Stream de la réponse
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return Response.json(
+      { error: "config: ANTHROPIC_API_KEY manquante dans Vercel" },
+      { status: 500 },
+    );
+  }
+
   const result = streamText({
     model: anthropic(agent.model),
     temperature: agent.temperature,
@@ -122,5 +129,12 @@ export async function POST(req: NextRequest) {
 
   return result.toDataStreamResponse({
     headers: { "x-conversation-id": convId },
+    // Renvoie le vrai message d'erreur au client (pour diagnostic) au lieu
+    // du masque générique par défaut de l'AI SDK.
+    getErrorMessage: (error) => {
+      const msg = error instanceof Error ? error.message : String(error);
+      console.error("[chat] streamText error:", msg);
+      return msg;
+    },
   });
 }

@@ -90,12 +90,15 @@ export function ChatWindow({
         ))}
 
         {error && (
-          <div className="mx-auto flex max-w-[85%] items-start gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>
-              L'IA n'a pas pu répondre. Si tu es le créateur, vérifie que la clé
-              Anthropic est bien configurée. Sinon, réessaie dans un instant.
-            </span>
+          <div className="mx-auto flex max-w-[85%] flex-col gap-1 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+            <div className="flex items-center gap-2 font-medium">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              L'IA n'a pas pu répondre
+            </div>
+            <p className="text-xs text-red-300/80">
+              {error.message?.slice(0, 300) ||
+                "Si tu es le créateur, vérifie la clé Anthropic et le crédit du compte."}
+            </p>
           </div>
         )}
       </div>
