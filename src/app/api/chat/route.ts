@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { streamText } from "ai";
-import { anthropic } from "@/lib/ai";
+import { anthropic, resolveModel } from "@/lib/ai";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
   }
 
   const result = streamText({
-    model: anthropic(agent.model),
+    model: anthropic(resolveModel(agent.model)),
     temperature: agent.temperature,
     system: systemPrompt,
     messages: messages.map((m) => ({ role: m.role, content: m.content })),
