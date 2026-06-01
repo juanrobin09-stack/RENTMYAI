@@ -39,8 +39,8 @@ export default function PricingPage() {
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium">
             💸 Aligné sur ta réussite
           </div>
-          <h1 className="text-balance text-4xl font-bold tracking-tight md:text-6xl">
-            Tarifs <span className="text-gradient">transparents</span>
+          <h1 className="text-balance text-5xl font-semibold tracking-tight md:text-6xl">
+            Tarifs <span className="font-serif italic text-gradient">transparents</span>
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
             Gratuit pour créer. On gagne uniquement quand tu gagnes.
