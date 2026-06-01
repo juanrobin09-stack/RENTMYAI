@@ -18,10 +18,16 @@ interface Props {
     description: string | null;
     systemPrompt: string;
     welcomeMsg: string | null;
+    model: string;
     priceMonthly: number;
     pricingModel: "FREE" | "SUBSCRIPTION" | "ONE_TIME";
   };
 }
+
+const MODELS = [
+  { value: "claude-sonnet-4-6", label: "Claude Sonnet 4.6 — qualité maximale" },
+  { value: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5 — rapide & économique" },
+];
 
 export function AgentEditForm({ agent }: Props) {
   const router = useRouter();
@@ -40,6 +46,7 @@ export function AgentEditForm({ agent }: Props) {
         description: String(f.get("description") || ""),
         systemPrompt: String(f.get("systemPrompt")),
         welcomeMsg: String(f.get("welcomeMsg") || ""),
+        model: String(f.get("model")),
         ...(agent.pricingModel === "SUBSCRIPTION"
           ? { priceMonthly: Math.round(Number(f.get("priceMonthly") || 0) * 100) }
           : {}),
@@ -81,6 +88,19 @@ export function AgentEditForm({ agent }: Props) {
           <div className="space-y-2">
             <Label htmlFor="welcomeMsg">Message d'accueil</Label>
             <Input id="welcomeMsg" name="welcomeMsg" defaultValue={agent.welcomeMsg ?? ""} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="model">Moteur IA</Label>
+            <select
+              id="model"
+              name="model"
+              defaultValue={MODELS.some((m) => m.value === agent.model) ? agent.model : "claude-sonnet-4-6"}
+              className="flex h-12 w-full rounded-xl border border-input bg-background px-3 text-base"
+            >
+              {MODELS.map((m) => (
+                <option key={m.value} value={m.value}>{m.label}</option>
+              ))}
+            </select>
           </div>
           {agent.pricingModel === "SUBSCRIPTION" && (
             <div className="space-y-2">

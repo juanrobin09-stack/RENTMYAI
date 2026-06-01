@@ -20,7 +20,7 @@ export default async function EditAgentPage({
     where: { id },
     select: {
       id: true, name: true, tagline: true, description: true,
-      systemPrompt: true, welcomeMsg: true, priceMonthly: true,
+      systemPrompt: true, welcomeMsg: true, model: true, priceMonthly: true,
       pricingModel: true, creatorId: true,
     },
   });

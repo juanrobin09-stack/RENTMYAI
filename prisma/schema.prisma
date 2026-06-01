@@ -210,7 +210,7 @@ model Agent {
 
   // Configuration IA
   systemPrompt String      @db.Text
-  model        String      @default("claude-3-5-haiku-20241022")
+  model        String      @default("claude-sonnet-4-6")
   temperature  Float       @default(0.7)
   welcomeMsg   String?     @db.Text
   suggestions  String[]    @default([])
