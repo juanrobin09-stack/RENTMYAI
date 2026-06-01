@@ -1,35 +1,28 @@
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getCurrentSession } from "@/server/auth";
+import { Logo } from "@/components/shared/logo";
+import { MobileNav } from "@/components/shared/mobile-nav";
 
 export async function Navbar() {
   const session = await getCurrentSession();
   const user = session?.user;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/40 bg-background/70 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-white/5 bg-background/70 backdrop-blur-xl">
       <div className="container flex h-16 items-center justify-between">
-        <Link href="/" className="group flex items-center gap-2.5 font-semibold">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-lg shadow-primary/30 transition group-hover:scale-105">
-            <Sparkles className="h-4 w-4" />
-          </span>
-          <span className="text-[15px] tracking-tight">RentMyAI</span>
+        <Link href="/" aria-label="Accueil RentMyAI">
+          <Logo />
         </Link>
 
-        <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
-          <Link href="/explore" className="transition hover:text-foreground">
-            Explorer
-          </Link>
-          <Link href="/pricing" className="transition hover:text-foreground">
-            Tarifs
-          </Link>
-          <Link href="/studio" className="transition hover:text-foreground">
-            Créer une IA
-          </Link>
+        <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
+          <Link href="/explore" className="transition hover:text-foreground">Explorer</Link>
+          <Link href="/pricing" className="transition hover:text-foreground">Tarifs</Link>
+          <Link href="/studio" className="transition hover:text-foreground">Créer une IA</Link>
         </nav>
 
-        <div className="flex items-center gap-2">
+        {/* Desktop actions */}
+        <div className="hidden items-center gap-2 md:flex">
           {user ? (
             <>
               <Button variant="ghost" size="sm" asChild>
@@ -50,6 +43,9 @@ export async function Navbar() {
             </>
           )}
         </div>
+
+        {/* Mobile burger */}
+        <MobileNav isAuthed={Boolean(user)} />
       </div>
     </header>
   );

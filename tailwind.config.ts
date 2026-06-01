@@ -46,6 +46,11 @@ const config: Config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      height: { 13: "3.25rem" },
+      fontFamily: {
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        serif: ["var(--font-serif)", "Georgia", "serif"],
+      },
       keyframes: {
         "fade-in": {
           from: { opacity: "0", transform: "translateY(8px)" },
