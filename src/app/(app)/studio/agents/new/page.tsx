@@ -75,7 +75,7 @@ export default function NewAgentPage() {
   const [tagline, setTagline] = useState("");
   const [prompt, setPrompt] = useState("");
   const [welcome, setWelcome] = useState("");
-  const [model, setModel] = useState("claude-3-5-haiku-latest");
+  const [model, setModel] = useState("claude-3-5-haiku-20241022");
 
   function applyTemplate(t: (typeof TEMPLATES)[number]) {
     setName(t.fullName);
@@ -187,8 +187,8 @@ export default function NewAgentPage() {
               onChange={(e) => setModel(e.target.value)}
               className="flex h-12 w-full rounded-xl border border-input bg-background px-3 text-base"
             >
-              <option value="claude-3-5-haiku-latest">Claude Haiku — rapide & économique</option>
-              <option value="claude-3-5-sonnet-latest">Claude Sonnet — qualité maximale</option>
+              <option value="claude-3-5-haiku-20241022">Claude Haiku — rapide & économique</option>
+              <option value="claude-3-5-sonnet-20241022">Claude Sonnet — qualité maximale</option>
             </select>
           </div>
         </div>
