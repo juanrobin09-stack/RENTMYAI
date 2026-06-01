@@ -27,7 +27,7 @@ export function PublishButton({ agentId, published }: { agentId: string; publish
       }
       return;
     }
-    toast.success("IA publiée 🎉");
+    toast.success("IA publiée avec succès");
     router.refresh();
   }
 

@@ -37,7 +37,7 @@ export default function PricingPage() {
       <div className="glow container relative py-24">
         <div className="mx-auto max-w-2xl text-center">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium">
-            💸 Aligné sur ta réussite
+            Aligné sur ta réussite
           </div>
           <h1 className="text-balance text-5xl font-semibold tracking-tight md:text-6xl">
             Tarifs <span className="font-serif italic text-gradient">transparents</span>

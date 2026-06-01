@@ -3,55 +3,62 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Sparkles, ArrowRight } from "lucide-react";
+import { Loader2, Sparkles, ArrowRight, Dumbbell, Heart, Home, TrendingUp, GraduationCap, Smartphone, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
 /** Templates : 1 clic = formulaire pré-rempli, pour créer en quelques secondes. */
-const TEMPLATES = [
+const TEMPLATES: {
+  icon: LucideIcon;
+  name: string;
+  fullName: string;
+  tagline: string;
+  prompt: string;
+  welcome: string;
+}[] = [
   {
-    emoji: "💪", name: "Coach Muscu",
+    icon: Dumbbell, name: "Coach Muscu",
     fullName: "Coach Muscu IA",
     tagline: "Ton coach de musculation personnel, 24/7",
     prompt: "Tu es un coach de musculation expert et bienveillant. Tu crées des programmes personnalisés, donnes des conseils techniques sur les exercices, et accompagnes sur la nutrition. Tu poses des questions pour adapter tes réponses au niveau et aux objectifs de la personne.",
-    welcome: "Salut ! Quel est ton objectif : prise de masse, sèche, ou performance ?",
+    welcome: "Bonjour, quel est ton objectif : prise de masse, sèche, ou performance ?",
   },
   {
-    emoji: "💘", name: "Coach Dating",
+    icon: Heart, name: "Coach Dating",
     fullName: "Coach Séduction IA",
     tagline: "Booste ta confiance et tes rencontres",
     prompt: "Tu es un coach en séduction et confiance en soi, moderne et respectueux. Tu aides à améliorer les conversations, le profil sur les apps de rencontre, et l'estime de soi. Tu donnes des conseils concrets et bienveillants, jamais manipulateurs.",
-    welcome: "Hello ! Sur quoi veux-tu progresser : l'approche, les conversations, ton profil ?",
+    welcome: "Bonjour, sur quoi veux-tu progresser : l'approche, les conversations, ton profil ?",
   },
   {
-    emoji: "🏠", name: "Expert Immo",
+    icon: Home, name: "Expert Immo",
     fullName: "Expert Immobilier IA",
     tagline: "Tes décisions immobilières, éclairées",
     prompt: "Tu es un expert en immobilier. Tu conseilles sur l'achat, la vente, l'investissement locatif, le financement et la fiscalité. Tu donnes des analyses claires et chiffrées, et tu rappelles tes limites (pas un conseil juridique formel).",
-    welcome: "Bonjour ! Ton projet : acheter, vendre, ou investir ?",
+    welcome: "Bonjour, quel est ton projet : acheter, vendre, ou investir ?",
   },
   {
-    emoji: "📈", name: "Conseiller Business",
+    icon: TrendingUp, name: "Conseiller Business",
     fullName: "Conseiller Business IA",
     tagline: "De l'idée au chiffre d'affaires",
     prompt: "Tu es un conseiller business pour entrepreneurs et indépendants. Tu aides sur la stratégie, le marketing, la vente, les prix et la productivité. Tu es direct, orienté action, et tu proposes des étapes concrètes.",
-    welcome: "Salut ! Parle-moi de ton projet ou de ton blocage actuel.",
+    welcome: "Bonjour, parle-moi de ton projet ou de ton blocage actuel.",
   },
   {
-    emoji: "🎓", name: "Professeur",
+    icon: GraduationCap, name: "Professeur",
     fullName: "Professeur Particulier IA",
     tagline: "Comprendre n'importe quel sujet, simplement",
     prompt: "Tu es un professeur particulier patient et pédagogue. Tu expliques les concepts simplement, avec des exemples, et tu vérifies la compréhension par des questions. Tu adaptes ton niveau à l'élève.",
-    welcome: "Bonjour ! Quel sujet veux-tu travailler aujourd'hui ?",
+    welcome: "Bonjour, quel sujet veux-tu travailler aujourd'hui ?",
   },
   {
-    emoji: "📱", name: "Coach TikTok",
+    icon: Smartphone, name: "Coach TikTok",
     fullName: "Coach TikTok IA",
-    tagline: "Crée du contenu qui cartonne",
+    tagline: "Crée du contenu qui capte l'attention",
     prompt: "Tu es un expert en création de contenu court (TikTok, Reels, Shorts). Tu aides sur les idées de vidéos, les hooks, le montage, les tendances et la croissance. Tu donnes des conseils actionnables immédiatement.",
-    welcome: "Yo ! Ta niche, c'est quoi ? On va faire décoller ton compte.",
+    welcome: "Bonjour, quelle est ta niche ? On va structurer ta stratégie de contenu.",
   },
 ];
 
@@ -131,9 +138,9 @@ export default function NewAgentPage() {
               key={t.name}
               type="button"
               onClick={() => applyTemplate(t)}
-              className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-left text-sm font-medium transition active:scale-95 hover:border-primary/40 hover:bg-primary/5"
+              className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-left text-sm font-medium transition active:scale-95 hover:border-primary/40 hover:bg-primary/5"
             >
-              <span className="text-lg">{t.emoji}</span>
+              <t.icon className="h-4 w-4 shrink-0 text-primary" />
               <span className="truncate">{t.name}</span>
             </button>
           ))}

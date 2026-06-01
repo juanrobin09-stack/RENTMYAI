@@ -2,19 +2,20 @@ import { PrismaClient } from "@prisma/client";
 
 const db = new PrismaClient();
 
+// `icon` = clé d'icône Lucide (rendue côté UI), pas un emoji.
 const CATEGORIES = [
-  { name: "Séduction & Dating", slug: "dating", icon: "💘" },
-  { name: "Sport & Musculation", slug: "fitness", icon: "💪" },
-  { name: "Immobilier", slug: "immobilier", icon: "🏠" },
-  { name: "Business & Entrepreneuriat", slug: "business", icon: "📈" },
-  { name: "Éducation", slug: "education", icon: "🎓" },
-  { name: "Réseaux sociaux", slug: "social", icon: "📱" },
-  { name: "Finance & Investissement", slug: "finance", icon: "💰" },
-  { name: "Développement personnel", slug: "mindset", icon: "🧠" },
+  { name: "Séduction & Dating", slug: "dating", icon: "heart" },
+  { name: "Sport & Musculation", slug: "fitness", icon: "dumbbell" },
+  { name: "Immobilier", slug: "immobilier", icon: "home" },
+  { name: "Business & Entrepreneuriat", slug: "business", icon: "trending-up" },
+  { name: "Éducation", slug: "education", icon: "graduation-cap" },
+  { name: "Réseaux sociaux", slug: "social", icon: "smartphone" },
+  { name: "Finance & Investissement", slug: "finance", icon: "wallet" },
+  { name: "Développement personnel", slug: "mindset", icon: "brain" },
 ];
 
 async function main() {
-  console.log("🌱 Seeding catégories…");
+  console.log("Seeding categories...");
   for (const c of CATEGORIES) {
     await db.category.upsert({
       where: { slug: c.slug },
@@ -22,7 +23,7 @@ async function main() {
       update: { name: c.name, icon: c.icon },
     });
   }
-  console.log(`✅ ${CATEGORIES.length} catégories prêtes.`);
+  console.log(`${CATEGORIES.length} categories ready.`);
 }
 
 main()

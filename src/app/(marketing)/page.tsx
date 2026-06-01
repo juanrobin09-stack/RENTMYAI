@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Sparkles, Upload, MessageSquare, Wallet, Star, Zap, Shield, Check } from "lucide-react";
+import { ArrowRight, Sparkles, Upload, MessageSquare, Wallet, Star, Zap, Shield, Check, Heart, Dumbbell, Home, TrendingUp, GraduationCap, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { db } from "@/lib/db";
 import { AgentCard } from "@/components/marketplace/agent-card";
@@ -14,12 +14,12 @@ const STEPS = [
 ];
 
 const CATEGORIES = [
-  { emoji: "💘", name: "Coach Dating" },
-  { emoji: "💪", name: "Coach Muscu" },
-  { emoji: "🏠", name: "Expert Immo" },
-  { emoji: "📈", name: "Business" },
-  { emoji: "🎓", name: "Professeur" },
-  { emoji: "📱", name: "Coach TikTok" },
+  { icon: Heart, name: "Coach Dating" },
+  { icon: Dumbbell, name: "Coach Muscu" },
+  { icon: Home, name: "Expert Immo" },
+  { icon: TrendingUp, name: "Business" },
+  { icon: GraduationCap, name: "Professeur" },
+  { icon: Smartphone, name: "Coach TikTok" },
 ];
 
 async function getFeatured() {
@@ -102,7 +102,7 @@ export default async function HomePage() {
                 className="glass animate-float flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium"
                 style={{ animationDelay: `${i * 0.5}s` }}
               >
-                <span>{c.emoji}</span>
+                <c.icon className="h-4 w-4 text-primary" />
                 {c.name}
               </div>
             ))}
@@ -182,7 +182,7 @@ function ChatMockup() {
       <div className="rounded-[1.3rem] border border-white/5 bg-background/60">
         {/* Header */}
         <div className="flex items-center gap-3 border-b border-white/5 px-4 py-3.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 text-sm">💪</div>
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white"><Dumbbell className="h-4 w-4" /></div>
           <div className="flex-1">
             <div className="text-sm font-semibold">Coach Muscu IA</div>
             <div className="text-xs text-muted-foreground">Exemple d'IA</div>
@@ -199,7 +199,7 @@ function ChatMockup() {
           </div>
           <div className="flex justify-start">
             <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-white/5 px-3.5 py-2.5 text-sm">
-              Parfait 💪 Voici un split Upper/Lower :
+              Parfait. Voici un split Upper/Lower :
               <div className="mt-2 space-y-1 text-xs text-muted-foreground">
                 <div>• Lun — Haut du corps (force)</div>
                 <div>• Mar — Bas du corps (volume)</div>
