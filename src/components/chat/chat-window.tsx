@@ -2,7 +2,8 @@
 
 import { useChat } from "ai/react";
 import { useRef, useEffect } from "react";
-import { Send, Sparkles } from "lucide-react";
+import { Send, Sparkles, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 interface ChatWindowProps {
@@ -22,10 +23,13 @@ export function ChatWindow({
   welcomeMsg,
   suggestions = [],
 }: ChatWindowProps) {
-  const { messages, input, handleInputChange, handleSubmit, append, status } =
+  const { messages, input, handleInputChange, handleSubmit, append, status, error } =
     useChat({
       api: "/api/chat",
       body: { agentId },
+      onError: () => {
+        toast.error("L'IA n'a pas pu répondre. Réessaie dans un instant.");
+      },
     });
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -84,6 +88,16 @@ export function ChatWindow({
             </div>
           </div>
         ))}
+
+        {error && (
+          <div className="mx-auto flex max-w-[85%] items-start gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>
+              L'IA n'a pas pu répondre. Si tu es le créateur, vérifie que la clé
+              Anthropic est bien configurée. Sinon, réessaie dans un instant.
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Composer */}
