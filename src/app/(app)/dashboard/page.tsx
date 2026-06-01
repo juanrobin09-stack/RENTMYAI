@@ -25,7 +25,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="container py-12">
-      <h1 className="text-3xl font-bold">Bonjour {user.name ?? ""} 👋</h1>
+      <h1 className="text-3xl font-bold">Bonjour {user.name ?? ""}</h1>
       <p className="text-muted-foreground">Tes IA et conversations</p>
 
       <h2 className="mt-10 text-lg font-semibold">Mes abonnements</h2>

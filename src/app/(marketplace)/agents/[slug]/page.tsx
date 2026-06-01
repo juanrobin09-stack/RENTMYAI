@@ -107,7 +107,7 @@ export default async function AgentPage({
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-3xl font-bold">{agent.name}</h1>
-                {agent.featured && <Badge variant="warning">⭐ Featured</Badge>}
+                {agent.featured && <Badge variant="warning">Recommandé</Badge>}
               </div>
               {agent.category && (
                 <Badge variant="secondary" className="mt-1">{agent.category.name}</Badge>
