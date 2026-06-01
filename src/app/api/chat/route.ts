@@ -58,9 +58,20 @@ export async function POST(req: NextRequest) {
 
   // 5. RAG — récupérer le contexte pertinent à partir du dernier message user
   const lastUser = [...messages].reverse().find((m) => m.role === "user");
-  const retrieved = lastUser
-    ? await retrieveContext(agentId, lastUser.content, 5)
-    : [];
+
+  // RAG optionnel : seulement si l'agent a des documents indexés.
+  // Une indisponibilité de Voyage ne doit jamais casser le chat.
+  let retrieved: Awaited<ReturnType<typeof retrieveContext>> = [];
+  if (lastUser) {
+    try {
+      const chunkCount = await db.chunk.count({ where: { agentId } });
+      if (chunkCount > 0) {
+        retrieved = await retrieveContext(agentId, lastUser.content, 5);
+      }
+    } catch (err) {
+      console.error("[chat] RAG indisponible, on continue sans contexte:", err);
+    }
+  }
   const contextBlock = buildContextBlock(retrieved);
 
   const systemPrompt = `Tu es "${agent.name}", une IA experte.\n${agent.systemPrompt}\n\nRègles : réponds en français, sois concret et actionnable, n'invente jamais de faits hors de ta base de connaissances.${contextBlock}`;
